@@ -1,0 +1,15 @@
+{% extends "landing/base.html" %} 
+{% block content %}
+<form style="width: 50%; margin-top: 10% !important;" class="m-auto" method="POST">
+    {% csrf_token %}
+    <div class="form-group">
+      <label for="exampleInputEmail1">Twitter Account</label>
+      <input type="text" class="form-control" name="username" placeholder="Username">
+    </div>
+    <button type="submit" class="btn btn-primary">Submit</button>
+  </form>
+
+<div>
+    {{follower}}
+</div>
+{% endblock content %}
