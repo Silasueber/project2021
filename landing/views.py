@@ -10,87 +10,133 @@ import time
 absolute = True
 
 def landingView(request):
+    
     context = {}
-    context['test'] = Twitteruser(350,150)
     udict = {}
     for u in models.TwitterUser.objects.all():
         n = {}
         for other in models.TwitterUser.objects.exclude(username=u.username):
             if not absolute:
-                n[other] = (len(models.Follower.objects.filter(follows=models.TwitterUser.objects.get(username=u.username)).filter(follows=models.TwitterUser.objects.get(username=other)))/models.TwitterUser.objects.get(username=u.username).followerCount)*100
+                n[other] = models.Connections.objects.get(fromUser=u, toUser=other).percentage
             else:
-                n[other] = (len(models.Follower.objects.filter(follows=models.TwitterUser.objects.get(username=u.username)).filter(follows=models.TwitterUser.objects.get(username=other))))
+                n[other] = models.Connections.objects.get(fromUser=u, toUser=other).amount
             
         udict[u] = n
     context['dict'] = udict
     context['absolute'] = absolute
+    
     return render(request, "landing/circles.html",context)
 
 def generateDataView(request):
     
     m = ""
-    if request.method == "POST":
-        try:
-            m = models.TwitterUser.objects.create(username=request.POST.get('username'))
-            m.save()
-            
-        except Exception as e:
-            m = models.TwitterUser.objects.get(username=request.POST.get('username'))
-            print("Error: ", e)
-            print("USE: ",m)
-
     context = {}
-    if request.method == 'POST':
-        headers = {
-            'Authorization':'Bearer AAAAAAAAAAAAAAAAAAAAACP0OwEAAAAAKu6o%2FKNL4JwiYWB631z5Mp2hSmU%3D9iB8szeUz2IJrKji1NrDvtuM6xrJdQSeh4wKmdVLKJDvGU2m2Q'
-            }
-
-        r = req.get("https://api.twitter.com/1.1/followers/ids.json?cursor=-1&screen_name="+request.POST.get('username')+"&count=5000", headers=headers)
+    if request.method == "POST":
+        l = request.POST.get('username').split(',')
         
-
-        context['follower'] = ""
-        context['follower'] += str(r.json()['ids'])
-        callCount = 1
-        followerCount = 0
-        next_cursor = r.json()['next_cursor']
-        while next_cursor != 0:
+        for us in l:
+            
             try:
-                callCount = 1
-                while next_cursor != 0 and callCount < 15:
-                    print("Call: " + str(callCount))
-                    r = req.get("https://api.twitter.com/1.1/followers/ids.json?cursor="+str(next_cursor)+"&screen_name="+request.POST.get('username')+"&count=5000", headers=headers)
-                    context['follower'] += str(r.json()['ids'])
-                    next_cursor = r.json()['next_cursor']
-                    callCount += 1
+                m = models.TwitterUser.objects.create(username=us)
+                m.save()
                 
-                i = 0
-                for l in context['follower'].replace('[','').replace("]","").split(","):
-                    print("Working on ID("+str(i)+"): ",l)
-                    i += 1
-                    try:
-                        f = models.Follower.objects.get(userid=l)
-                    except:
-                        f = models.Follower.objects.create(userid=l)
-                    f.follows.add(models.TwitterUser.objects.get(username=request.POST.get('username')))
-                    f.save()
-                
-                mm = models.TwitterUser.objects.get(username=request.POST.get('username'))
-                mm.followerCount += len(context['follower'].replace('[','').replace("]","").split(","))
-                mm.save()
-
-                context['follower'] = ""
             except Exception as e:
-                print("Error occured please Wait for Updates")
-                time.sleep(60)
+                m = models.TwitterUser.objects.get(username=us)
 
+            m.followerCount = 0
+            m.save()
+            if request.method == 'POST':
+                
+                notFinish = True
+                while notFinish:
+                    try:
+                        headers = {
+                            'Authorization':'Bearer AAAAAAAAAAAAAAAAAAAAACP0OwEAAAAAKu6o%2FKNL4JwiYWB631z5Mp2hSmU%3D9iB8szeUz2IJrKji1NrDvtuM6xrJdQSeh4wKmdVLKJDvGU2m2Q'
+                            }
 
-        
+                        r = req.get("https://api.twitter.com/1.1/followers/ids.json?cursor=-1&screen_name="+us+"&count=5000", headers=headers)
+                        
+                        
+                        context['follower'] = ""
+                        context['follower'] += str(r.json()['ids'])
+                        callCount = 1
+                        followerCount = 0
+                        next_cursor = r.json()['next_cursor']
+                        notFinish = False
+                    except:
 
+                        print("Error occured please Wait for Updates...")
+                        c = 10
+                        while c > 0:
+                            print("Next try in: " + str(c) + " Seconds")
+                            c -= 1
+                            time.sleep(1)
+                if next_cursor != 0:
+                    while next_cursor != 0:
+                        try:
+                            callCount = 1
+                            while next_cursor != 0 and callCount < 15:
+                                
+                                r = req.get("https://api.twitter.com/1.1/followers/ids.json?cursor="+str(next_cursor)+"&screen_name="+us+"&count=5000", headers=headers)
+                                print("Call: " + str(callCount))
+                                context['follower'] += str(r.json()['ids'])
+                                next_cursor = r.json()['next_cursor']
+                                callCount += 1
+                            
+                            i = 0
+                            for l in context['follower'].replace('[','').replace("]","").split(","):
+                                print("Working on ID("+str(i)+"): ",l)
+                                i += 1
+                                try:
+                                    f = models.Follower.objects.get(userid=l)
+                                except:
+                                    f = models.Follower.objects.create(userid=l)
+                                f.follows.add(models.TwitterUser.objects.get(username=us))
+                                f.save()
+                            
+                            mm = models.TwitterUser.objects.get(username=us)
+                            mm.followerCount += len(context['follower'].replace('[','').replace("]","").split(","))
+                            mm.save()
+
+                            context['follower'] = ""
+                        except Exception as e:
+                            print("Error occured please Wait for Updates...")
+                            c = 10
+                            while c > 0:
+                                print("Next try in: " + str(c) + " Seconds")
+                                c -= 1
+                                time.sleep(1)
+                else:
+                    i = 0
+                    for l in context['follower'].replace('[','').replace("]","").split(","):
+                            print("Working on ID("+str(i)+"): ",l)
+                            i += 1
+                            try:
+                                f = models.Follower.objects.get(userid=l)
+                            except:
+                                f = models.Follower.objects.create(userid=l)
+                            f.follows.add(models.TwitterUser.objects.get(username=us))
+                            f.save()
+                            
+                            mm = models.TwitterUser.objects.get(username=us)
+                            mm.followerCount = len(context['follower'].replace('[','').replace("]","").split(","))
+                            mm.save()
     return render(request, "landing/generate.html",context)
 
-class Twitteruser:
-    def __init__(self, posx, posy):
-        self.posx = posx
-        self.posy = posy
+def calculateView(request):
+    context = {}
+    if request.method == "POST":
+         for u in models.TwitterUser.objects.all():
+            for other in models.TwitterUser.objects.exclude(username=u.username):
+                print(u.username," : ", other.username)
+                try:
+                    m = models.Connections.objects.get(fromUser=u, toUser=other)
+                except:
+                    m = models.Connections.objects.create(fromUser=u, toUser=other)
 
-    weight = [10,5,10]
+                m.percentage = (len(models.Follower.objects.filter(follows=models.TwitterUser.objects.get(username=u.username)).filter(follows=models.TwitterUser.objects.get(username=other)))/models.TwitterUser.objects.get(username=u.username).followerCount)*100
+                m.amount = (len(models.Follower.objects.filter(follows=models.TwitterUser.objects.get(username=u.username)).filter(follows=models.TwitterUser.objects.get(username=other))))
+                m.save()
+                context['info'] = "success!"
+    return render(request, "landing/calculateData.html", context)
+       

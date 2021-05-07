@@ -5,4 +5,5 @@ from . import views
 urlpatterns = [
     path('', views.landingView, name="landing"),
     path('generate', views.generateDataView, name="generateData"),
+    path('calculate', views.calculateView, name="calculateData"),
 ]

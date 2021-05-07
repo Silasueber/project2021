@@ -23,3 +23,6 @@ class Connections(models.Model):
     toUser = models.ForeignKey(TwitterUser, on_delete=models.CASCADE, related_name="TO")
     amount = models.IntegerField(default=0)
     percentage = models.IntegerField(default=0)
+
+    def __str__(self):
+        return str(self.fromUser)+":"+str(self.toUser)

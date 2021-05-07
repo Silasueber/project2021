@@ -1,0 +1,12 @@
+{% extends "landing/base.html" %} 
+{% block content %}
+<form style="width: 50%; margin-top: 10% !important;" class="m-auto" method="POST">
+    {% csrf_token %}
+    <button type="submit" class="btn btn-primary btn-lg">Calculate
+    </button>
+  </form>
+
+<div>
+    {{info}}
+</div>
+{% endblock content %}
