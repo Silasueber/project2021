@@ -50,7 +50,7 @@
         div.addClass('infoDiv')
         div.addClass('d-none')
 
-
+        
         this.display = function()
         {
             stroke(255);
@@ -139,12 +139,21 @@
                         
                         if(abso)
                         {
-                            strokeWeight(document.getElementById("div_"+user).children[v].innerHTML.split("**")[1]/1000)
+                            if(document.getElementById("div_"+user).children[v].innerHTML.split("**")[1]/1000 > 1000)
+                            {
+                              strokeWeight(document.getElementById("div_"+user).children[v].innerHTML.split("**")[1]/1000)
+                            }
                         }else{
                             
                             strokeWeight(document.getElementById("div_"+user).children[v].innerHTML.split("**")[1]*100)
                         }
-                        strokeWeight(document.getElementById("div_"+user).children[v].innerHTML.split("**")[1]/1000)
+                        if(document.getElementById("div_"+user).children[v].innerHTML.split("**")[1] > 1)
+                            {
+                              strokeWeight(document.getElementById("div_"+user).children[v].innerHTML.split("**")[1]/1000)
+                            }else
+                            {
+                                strokeWeight(0)
+                            }
                         l = line(infos[z].x,infos[z].y,infos[i].x,infos[i].y)
                     }
                 }
