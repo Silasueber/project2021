@@ -11,12 +11,60 @@
 </div>  
 
 {% endfor %}
+<div>
+    <div class="slidecontainer">
+        <input type="range" min="0" max="20000" value="0" class="slider" id="threshRange" oninput="changeThreshold()">
+      </div>
+    <p id="tText">Threshold: 0</p>
+</div>
+<style>
+    .slidecontainer {
+  width: 100%; /* Width of the outside container */
+}
+
+/* The slider itself */
+.slider {
+  -webkit-appearance: none;  /* Override default CSS styles */
+  appearance: none;
+  width: 100%; /* Full-width */
+  height: 25px; /* Specified height */
+  background: #d3d3d3; /* Grey background */
+  outline: none; /* Remove outline */
+  opacity: 0.7; /* Set transparency (for mouse-over effects on hover) */
+  -webkit-transition: .2s; /* 0.2 seconds transition on hover */
+  transition: opacity .2s;
+}
+
+/* Mouse-over effects */
+.slider:hover {
+  opacity: 1; /* Fully shown on mouse-over */
+}
+
+/* The slider handle (use -webkit- (Chrome, Opera, Safari, Edge) and -moz- (Firefox) to override default look) */
+.slider::-webkit-slider-thumb {
+  -webkit-appearance: none; /* Override default look */
+  appearance: none;
+  width: 25px; /* Set a specific slider handle width */
+  height: 25px; /* Slider handle height */
+  background: #04AA6D; /* Green background */
+  cursor: pointer; /* Cursor on hover */
+}
+
+.slider::-moz-range-thumb {
+  width: 25px; /* Set a specific slider handle width */
+  height: 25px; /* Slider handle height */
+  background: #04AA6D; /* Green background */
+  cursor: pointer; /* Cursor on hover */
+}
+</style>
 
 <script src="https://cdn.jsdelivr.net/npm/p5@1.3.1/lib/p5.js"></script>
 <script>
     
     let sf = 1; // scaleFactor
     let mx = 0, my = 0; // mouse coords;
+
+    let lineThreshold = 1;
 
     let startmx, startmy;
     let xend = 0, yend = 0;
@@ -39,7 +87,6 @@
         this.draged = false;
         this.infoopen = false;
         this.col = color(0,0,255);
-
         this.col = color(255,0,200);
         let div = createDiv('<p>'+this.name+'</p><p>Follower Count: '+this.count+'</p><p href="#" class="btn btn-primary">Go somewhere</p>');
         div.style('font-size', '16px');
@@ -108,7 +155,7 @@
    
 
     function setup() {
-        createCanvas(windowWidth, 800);
+        var c = createCanvas(windowWidth, 800);
         
         for(var i = 0; i < document.getElementsByClassName("userdiv").length; i++)
         {
@@ -148,7 +195,7 @@
                             
                             strokeWeight(document.getElementById("div_"+user).children[v].innerHTML.split("**")[1]*100)
                         }
-                        if(document.getElementById("div_"+user).children[v].innerHTML.split("**")[1] > 1)
+                        if(document.getElementById("div_"+user).children[v].innerHTML.split("**")[1] > int(lineThreshold))
                             {
                               strokeWeight(document.getElementById("div_"+user).children[v].innerHTML.split("**")[1]/1000)
                             }else
@@ -175,44 +222,70 @@
         }
     }
 
+    function checkInside()
+    {
+        var rect = document.getElementById('defaultCanvas0').getBoundingClientRect()
+        if(mouseX < rect.right && mouseX > rect.left && mouseY < rect.bottom && mouseY > 0)
+        {
+            return true
+        }else
+        {
+            return false
+        }
+    }
+
     function mousePressed()
     {
-        startmx = mouseX;
-        startmy = mouseY;
-        
-        for (var i = 0; i < infos.length; i++)
+        if(checkInside())
+        {
+            startmx = mouseX;
+            startmy = mouseY;
+            
+            for (var i = 0; i < infos.length; i++)
             {
 
                 infos[i].clicked();
             }
+        }
+        
     }
 
     function mouseDragged()
     {
-        
-        if(!pointDrag)
+        if(checkInside())
         {
-
-            for (var i = 0; i < infos.length; i++)
+            if(!pointDrag)
             {
 
-                infos[i].moved();
+                for (var i = 0; i < infos.length; i++)
+                {
+
+                    infos[i].moved();
+                }
+            }
+
+                if(!dragging)
+                {
+                    pointDrag = true;
+                if(int(mouseX) - int(startmx) != mx)
+                {
+                    mx = xend +(int(mouseX) - int(startmx));
+                }
+                if(int(mouseY) - startmy != my)
+                {
+                    my = yend+(int(mouseY) - startmy);
+                }
+
             }
         }
+    }
 
-            if(!dragging)
-            {
-                pointDrag = true;
-            if(int(mouseX) - int(startmx) != mx)
-            {
-                mx = xend +(int(mouseX) - int(startmx));
-            }
-            if(int(mouseY) - startmy != my)
-            {
-                my = yend+(int(mouseY) - startmy);
-            }
+    function changeThreshold()
+    {
 
-        }
+        lineThreshold = document.getElementById('threshRange').value
+        document.getElementById('tText').innerText = "Threshold: " +lineThreshold
+        console.log(lineThreshold)
     }
 
     function mouseReleased()
