@@ -196,8 +196,26 @@
                             strokeWeight(0)
                             var fillB = false;
                         }
-                        //l = line(infos[z].x,infos[z].y,infos[i].x,infos[i].y)
+                        var offset = 10;
+                        x1 = createVector(infos[z].x, infos[z].y)
+                        x2 = createVector(infos[i].x, infos[i].y)
+                        x3 = createVector((infos[z].x+infos[i].x)/2, (infos[z].y+infos[i].y)/2)
+                        
+                        l = line(x1.x,x1.y,x2.x,x2.y)
                         noFill();
+                        push() //start new drawing state
+                        var angle = atan2(x2.y - x1.y, x2.x - x1.x); //gets the angle of the line
+                        translate(x3.x, x3.y); //translates to the destination vertex
+                        rotate(angle-HALF_PI); //rotates the arrow point
+                        if(fillB)
+                        {
+                            fill('white');
+                        }
+                        triangle((-offset)*0.5, offset-15, (offset)*0.5, offset-15, 0, ((-offset)/2)-15); //draws the arrow point as a triangle
+                        
+                        noFill();
+                        pop();
+                        /*noFill();
                         beginShape();
                         x1 = createVector(infos[z].x, infos[z].y)
                         x2 = createVector(infos[i].x, infos[i].y)
@@ -226,7 +244,7 @@
                         }
                         triangle(-offset*0.5, offset, offset*0.5, offset, 0, -offset/2); //draws the arrow point as a triangle
                         noFill();
-                        pop();
+                        pop();*/
                     }
                 }
             
