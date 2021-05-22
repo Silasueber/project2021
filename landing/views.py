@@ -13,19 +13,47 @@ def landingView(request):
     
     context = {}
     udict = {}
+    followDict = {}
     for u in models.TwitterUser.objects.all():
         n = {}
+        fol = {}
         for other in models.TwitterUser.objects.exclude(username=u.username):
             if not absolute:
                 n[other] = models.Connections.objects.get(fromUser=u, toUser=other).percentage
             else:
                 n[other] = models.Connections.objects.get(fromUser=u, toUser=other).amount
-            
+            fol[other] = models.Connections.objects.get(fromUser=u, toUser=other).follows
         udict[u] = n
+        followDict[u] = fol
     context['dict'] = udict
     context['absolute'] = absolute
+    context['follows'] = followDict
+
     
-    return render(request, "landing/circles.html",context)
+    return render(request, "landing/circlesTest.html",context)
+
+ 
+def getIdFromUsername(Username):
+    
+    headers = {'Authorization':'Bearer AAAAAAAAAAAAAAAAAAAAACP0OwEAAAAAKu6o%2FKNL4JwiYWB631z5Mp2hSmU%3D9iB8szeUz2IJrKji1NrDvtuM6xrJdQSeh4wKmdVLKJDvGU2m2Q'}
+    r = req.get("https://api.twitter.com/1.1/users/show.json?screen_name="+str(Username), headers=headers)
+    return r.json()['id']
+
+
+def AddIdToUsername(Username):
+    u = models.TwitterUser.objects.get(username=Username)
+    userId = getIdFromUsername(u.username)
+    u.userid = userId
+    u.save()
+
+def checkFollow(From,To):
+    fromId = models.TwitterUser.objects.get(username=From).userid
+    t = models.TwitterUser.objects.get(username=To)
+    try:
+        f = models.Follower.objects.get(userid__contains=' '+str(fromId))
+    except:
+        return False
+    return t in f.follows.all()
 
 def generateDataView(request):
     
@@ -125,8 +153,10 @@ def generateDataView(request):
 
 def calculateView(request):
     context = {}
+    checkFollow('Silasueber','Broeki2')
     if request.method == "POST":
          for u in models.TwitterUser.objects.all():
+            AddIdToUsername(u.username)
             for other in models.TwitterUser.objects.exclude(username=u.username):
                 print(u.username," : ", other.username)
                 try:
@@ -134,6 +164,7 @@ def calculateView(request):
                 except:
                     m = models.Connections.objects.create(fromUser=u, toUser=other)
 
+                m.follows = checkFollow(u.username,other.username)
                 m.percentage = (len(models.Follower.objects.filter(follows=models.TwitterUser.objects.get(username=u.username)).filter(follows=models.TwitterUser.objects.get(username=other)))/models.TwitterUser.objects.get(username=u.username).followerCount)*100
                 m.amount = (len(models.Follower.objects.filter(follows=models.TwitterUser.objects.get(username=u.username)).filter(follows=models.TwitterUser.objects.get(username=other))))
                 m.save()

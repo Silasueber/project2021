@@ -6,6 +6,7 @@ from django.db import models
 class TwitterUser(models.Model):
     username = models.CharField(max_length=30, unique=True)
     followerCount = models.IntegerField(default=0)
+    userid = models.CharField(max_length=30, default="")
     
     def __str__(self):
         return self.username
@@ -23,6 +24,7 @@ class Connections(models.Model):
     toUser = models.ForeignKey(TwitterUser, on_delete=models.CASCADE, related_name="TO")
     amount = models.IntegerField(default=0)
     percentage = models.IntegerField(default=0)
+    follows = models.BooleanField(default=False)
 
     def __str__(self):
         return str(self.fromUser)+":"+str(self.toUser)
