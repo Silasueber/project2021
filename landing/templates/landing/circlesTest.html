@@ -15,12 +15,12 @@
 {% endfor %}
 
 
-<div>
-    <div class="slidecontainer">
-        <input type="range" min="0" max="20000" value="0" class="slider" id="threshRange" oninput="changeThreshold()">
-      </div>
-    <p id="tText">Threshold: 0</p>
-</div>
+<select class="custom-select" id="inputGroupSelect01" onchange="selectCircle(event)">
+    <option selected value="ANY">All</option>
+    {% for user, f in follows.items%}
+    <option value="{{user}}">{{user}}</option>
+    {% endfor %}
+  </select>
 <style>
     .slidecontainer {
   width: 100%; /* Width of the outside container */
@@ -89,9 +89,11 @@
         this.name = name;
         this.count = count
         this.draged = false;
+        this.selected = true;
         this.infoopen = false;
         this.col = color(0,0,255);
         this.col = color(255,0,200);
+        this.textColor = color(0,0,0);
         let div = createDiv('<p>'+this.name+'</p><p>Follower Count: '+this.count+'</p><p href="#" class="btn btn-primary">Go somewhere</p>');
         div.style('font-size', '16px');
         div.style('border','1px solid red')
@@ -107,10 +109,13 @@
         {
             stroke(255);
             fill(this.col);
+            strokeWeight(0);
             ellipse(this.x, this.y, Math.max(this.count/1000,20), Math.max(this.count/1000,20));
-            fill(0, 0, 0);
+            fill(this.textColor);
             textSize(Math.max(this.count/1000,20));
+            
             text(this.name, this.x, this.y);
+            strokeWeight(1);
             textSize(12);
             
             
@@ -119,6 +124,8 @@
             div.style('font-size', sz+'px');
             div.size(300*sf,100*sf);
         }
+
+
 
         this.clicked = function()
         {
@@ -136,12 +143,29 @@
             }
         }
 
+        this.select = function(name)
+        {
+            if(name == this.name || name == "ANY")
+            {
+                this.selected = true
+                this.col = color(255,0,200);
+                this.textColor = color(0,0,0);
+            }else{
+                this.col = color(100,100,100,100);
+                this.textColor = color(0,0,0,10);
+                this.selected = false
+            }
+        }
+
         this.moved = function()
         {
             var d = dist(mouseX, mouseY, this.x*sf+xend, this.y*sf+yend)
             if((d < Math.max(this.count/1000,20)/2*sf  && !dragging)|| this.dragging)
             {
-                this.col = color(255,0,200);
+                if(this.selected)
+                {
+                    this.col = color(255,0,200);
+                }
                 this.dragging = true;
                 dragging = true;
                 this.x = (mouseX-xend)/sf;
@@ -178,6 +202,7 @@
     background(125);
     translate(mx, my);
     scale(sf);
+    
     for (var i = 0; i < infos.length; i++)
     {
         
@@ -196,12 +221,36 @@
                             strokeWeight(0)
                             var fillB = false;
                         }
+
+                        
                         var offset = 10;
                         x1 = createVector(infos[z].x, infos[z].y)
                         x2 = createVector(infos[i].x, infos[i].y)
                         x3 = createVector((infos[z].x+infos[i].x)/2, (infos[z].y+infos[i].y)/2)
                         
+
+                        fcolor = color(255,255,255,255);
+                        if(infos[z].selected && fillB && !infos[i].selected)
+                        {
+                            infos[i].col = color(0,0,255, 100)
+                            infos[i].textColor = color(0,0,0,200)
+                        }
+                        if(!infos[z].selected && fillB && infos[i].selected)
+                        {
+                            infos[z].col = color(0,0,255, 100)
+                            infos[z].textColor = color(0,0,0,200)
+                        }
+                        if(infos[i].selected || infos[z].selected)
+                        {
+                            fcolor = color(255,255,255,255);
+                            stroke(fcolor);
+                        }else{
+                            fcolor = color(255,255,255,10);
+                            stroke(fcolor);
+                        }
                         l = line(x1.x,x1.y,x2.x,x2.y)
+
+
                         noFill();
                         push() //start new drawing state
                         var angle = atan2(x2.y - x1.y, x2.x - x1.x); //gets the angle of the line
@@ -209,7 +258,7 @@
                         rotate(angle-HALF_PI); //rotates the arrow point
                         if(fillB)
                         {
-                            fill('white');
+                            fill(fcolor);
                         }
                         triangle((-offset)*0.5, offset-15, (offset)*0.5, offset-15, 0, ((-offset)/2)-15); //draws the arrow point as a triangle
                         
@@ -350,12 +399,21 @@
             }
     }
 
-    window.addEventListener("wheel", function(e) {
+    function selectCircle(e)
+    {
+        print(e.target.value)
+        for (var i = 0; i < infos.length; i++)
+            {
+                infos[i].select(e.target.value);
+            }
+    }
+
+    /*window.addEventListener("wheel", function(e) {
     if (e.deltaY > 0)
         sf *= 1.05;
     else
         sf *= 0.95;
-    });
+    });*/
 </script>
 
 {% endblock content %}

@@ -30,6 +30,29 @@ def landingView(request):
     context['follows'] = followDict
 
     
+    return render(request, "landing/circles.html",context)
+
+def whoFollowsWhoView(request):
+    
+    context = {}
+    udict = {}
+    followDict = {}
+    for u in models.TwitterUser.objects.all():
+        n = {}
+        fol = {}
+        for other in models.TwitterUser.objects.exclude(username=u.username):
+            if not absolute:
+                n[other] = models.Connections.objects.get(fromUser=u, toUser=other).percentage
+            else:
+                n[other] = models.Connections.objects.get(fromUser=u, toUser=other).amount
+            fol[other] = models.Connections.objects.get(fromUser=u, toUser=other).follows
+        udict[u] = n
+        followDict[u] = fol
+    context['dict'] = udict
+    context['absolute'] = absolute
+    context['follows'] = followDict
+
+    
     return render(request, "landing/circlesTest.html",context)
 
  
