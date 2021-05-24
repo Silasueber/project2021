@@ -20,7 +20,25 @@
     {% for user, f in follows.items%}
     <option value="{{user}}">{{user}}</option>
     {% endfor %}
-  </select>
+</select>
+
+<div class="form-check form-check-inline">
+    <input class="form-check-input" type="radio" name="inlineRadioOptions" id="inlineRadio1" value="follows" onclick="changeArrowFunction('follows')">
+    <label class="form-check-label" for="inlineRadio1">Follows</label>
+  </div>
+  <div class="form-check form-check-inline">
+    <input class="form-check-input" type="radio" name="inlineRadioOptions" id="inlineRadio2" value="followedBy" onclick="changeArrowFunction('followedBy')">
+    <label class="form-check-label" for="inlineRadio2">followed by</label>
+  </div>
+  <div class="form-check form-check-inline">
+    <input class="form-check-input" type="radio" name="inlineRadioOptions" id="inlineRadio3" value="EachOther" onclick="changeArrowFunction('eachOther')">
+    <label class="form-check-label" for="inlineRadio3">Follow each other</label>
+  </div>
+  <div class="form-check form-check-inline">
+    <input class="form-check-input" type="radio" name="inlineRadioOptions" id="inlineRadio3" value="All"  checked="checked" onclick="changeArrowFunction('All')">
+    <label class="form-check-label" for="inlineRadio3">All</label>
+</div>
+  
 <style>
     .slidecontainer {
   width: 100%; /* Width of the outside container */
@@ -79,6 +97,8 @@
     var users = "{{test}}"
 
     var pointDrag = false;
+
+    var eachother = false, followedBy = true, follows = true
 
 
 
@@ -198,6 +218,8 @@
     function draw() {
     
     var abso = "{{absolute}}"
+
+    connections = []
     
     background(125);
     translate(mx, my);
@@ -207,16 +229,33 @@
     {
         
         user = infos[i].name
+        mode = true
         for(var v = 0; v < document.getElementById("div_"+user).children.length; v++)
         {
             for (var z = 0; z < infos.length; z++)
                 {
                     if(infos[z].name == document.getElementById("div_"+user).children[v].innerHTML.split("**")[0])
                     {
+
                         var fillB = true;
                         if(document.getElementById("div_"+user).children[v].innerHTML.split("**")[1] == 'True')
                         {
-                            strokeWeight(4)
+                            if(eachother)
+                            {
+                                if(connections.includes(infos[i].name +":"+infos[z].name))
+                                {
+                                    strokeWeight(4)
+                                }else{
+                                    
+                                    strokeWeight(0)
+                                    connections.push(infos[z].name +":"+infos[i].name)
+                                    fillB = false;
+                                }
+                            }else{
+                                strokeWeight(4)
+                            }
+                            
+                            
                         }else{
                             strokeWeight(0)
                             var fillB = false;
@@ -230,40 +269,104 @@
                         
 
                         fcolor = color(255,255,255,255);
-                        if(infos[z].selected && fillB && !infos[i].selected)
+                        
+                        /**if(infos[z].selected && fillB && !infos[i].selected && follows)
                         {
                             infos[i].col = color(0,0,255, 100)
                             infos[i].textColor = color(0,0,0,200)
                         }
-                        if(!infos[z].selected && fillB && infos[i].selected)
+                        if(!infos[z].selected && fillB && infos[i].selected && followedBy)
                         {
                             infos[z].col = color(0,0,255, 100)
                             infos[z].textColor = color(0,0,0,200)
-                        }
-                        if(infos[i].selected || infos[z].selected)
+                        }**/
+                        
+                        if(infos[i].selected && follows|| infos[z].selected && followedBy)
                         {
+                            fcolor = color(255,255,255,255);
+                            stroke(fcolor);
+                        }else if(eachother && (infos[i].selected || infos[z].selected)){
                             fcolor = color(255,255,255,255);
                             stroke(fcolor);
                         }else{
                             fcolor = color(255,255,255,10);
                             stroke(fcolor);
                         }
+
+                        
+                        /*if(!infos[i].col == color(0,255,0, 100) || !infos[i].col == color(255,0,200))
+                        {
+                            infos[i].col = color(255,255,255,10);
+                        }*/
+
+                        
+                        if(!infos[i].selected && infos[z].selected && !fillB && followedBy && !follows)
+                        {
+                            infos[i].col = color(100,100,100,100);
+                            infos[i].textColor = color(0,0,0,10);
+                        }else if(!infos[i].selected && infos[z].selected && fillB && followedBy && !follows)
+                        {
+                            infos[i].col = color(0,0,255, 100);
+                            infos[i].textColor = color(0,0,0,200)
+                        }else if(infos[i].selected && !infos[z].selected && fillB && !followedBy && follows)
+                        {
+                            infos[z].col = color(0,0,255, 100);
+                            infos[z].textColor = color(0,0,0,200)
+                        }else if(infos[i].selected && !infos[z].selected && !fillB && !followedBy && follows)
+                        {
+                            infos[z].col = color(100,100,100,100);
+                            infos[z].textColor = color(0,0,0,10);
+                        }
+                        else if(infos[i].selected && !infos[z].selected && fillB && followedBy && follows)
+                        {
+                            infos[z].col = color(0,0,255, 100);
+                            infos[z].textColor = color(0,0,0,200)
+                        }else if(infos[z].selected && !infos[i].selected && fillB && followedBy && follows)
+                        {
+                            infos[i].col = color(0,0,255, 100);
+                            infos[i].textColor = color(0,0,0,200)
+                        }else if(eachother && (infos[i].selected || infos[z].selected) && fillB){
+                            infos[i].col = color(0,0,255, 100);
+                            infos[i].textColor = color(0,0,0,200)
+                        }else if(eachother && (infos[i].selected || infos[z].selected) && !fillB){
+                            infos[z].col = color(100,100,100,100);
+                            infos[z].textColor = color(0,0,0,10);
+                        }
+
+                        if(infos[i].selected)
+                        {
+                            infos[i].col = color(255,0,200);
+                            infos[i].textColor = color(0,0,0);
+                        }
+
+                        if(infos[z].selected)
+                        {
+                            infos[z].col = color(255,0,200);
+                            infos[z].textColor = color(0,0,0);
+                        }
+                        
+
+                        
                         l = line(x1.x,x1.y,x2.x,x2.y)
 
-
                         noFill();
-                        push() //start new drawing state
-                        var angle = atan2(x2.y - x1.y, x2.x - x1.x); //gets the angle of the line
-                        translate(x3.x, x3.y); //translates to the destination vertex
-                        rotate(angle-HALF_PI); //rotates the arrow point
-                        if(fillB)
+                        if(!eachother)
                         {
-                            fill(fcolor);
+                            
+                            push() //start new drawing state
+                            var angle = atan2(x2.y - x1.y, x2.x - x1.x); //gets the angle of the line
+                            translate(x3.x, x3.y); //translates to the destination vertex
+                            rotate(angle-HALF_PI); //rotates the arrow point
+                            if(fillB)
+                            {
+                                fill(fcolor);
+                            }
+                            triangle((-offset)*0.5, offset-15, (offset)*0.5, offset-15, 0, ((-offset)/2)-15); //draws the arrow point as a triangle
+                            
+                            noFill();
+                            pop();
                         }
-                        triangle((-offset)*0.5, offset-15, (offset)*0.5, offset-15, 0, ((-offset)/2)-15); //draws the arrow point as a triangle
                         
-                        noFill();
-                        pop();
                         /*noFill();
                         beginShape();
                         x1 = createVector(infos[z].x, infos[z].y)
@@ -296,7 +399,6 @@
                         pop();*/
                     }
                 }
-            
             
         }
         strokeWeight(1)
@@ -406,6 +508,38 @@
             {
                 infos[i].select(e.target.value);
             }
+    }
+
+    function changeArrowFunction(mode)
+    {
+        switch(mode)
+        {
+            case 'All':
+                console.log("ALL")
+                eachother = false;
+                followedBy = true;
+                follows = true
+
+                break;
+            case 'follows':
+                console.log("FOLLOWEs")
+                eachother = false;
+                followedBy = false;
+                follows = true
+                break;
+            case 'eachOther':
+                console.log("EACH")
+                eachother = true;
+                followedBy = false;
+                follows = false
+                break;
+            case 'followedBy':
+                console.log("BYY")
+                eachother = false;
+                followedBy = true;
+                follows = false
+                break;
+        }
     }
 
     /*window.addEventListener("wheel", function(e) {
