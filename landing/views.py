@@ -58,7 +58,7 @@ def whoFollowsWhoView(request):
  
 def getIdFromUsername(Username):
     
-    headers = {'Authorization':'Bearer AAAAAAAAAAAAAAAAAAAAACP0OwEAAAAAKu6o%2FKNL4JwiYWB631z5Mp2hSmU%3D9iB8szeUz2IJrKji1NrDvtuM6xrJdQSeh4wKmdVLKJDvGU2m2Q'}
+    headers = {'Authorization':'Bearer AAAAAAAAAAAAAAAAAAAAABI4PwEAAAAAvL%2BANkwuKEpxiF1P%2ByOCplOkhDo%3D2dFKEI8JkRWEFIhvaVG4JUTX1WYCuV1GCBHsffwTS66kTZxdHA'}
     r = req.get("https://api.twitter.com/1.1/users/show.json?screen_name="+str(Username), headers=headers)
     return r.json()['id']
 
