@@ -176,7 +176,6 @@ def generateDataView(request):
 
 def calculateView(request):
     context = {}
-    checkFollow('Silasueber','Broeki2')
     if request.method == "POST":
          for u in models.TwitterUser.objects.all():
             AddIdToUsername(u.username)

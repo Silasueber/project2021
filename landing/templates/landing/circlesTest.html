@@ -22,6 +22,13 @@
     {% endfor %}
 </select>
 
+<div class="form-check">
+    <input class="form-check-input" type="checkbox" value="" id="flexCheckDefault" onchange="changeFun()">
+    <label class="form-check-label" for="flexCheckDefault">
+      FUN
+    </label>
+  </div>
+
 <div class="form-check form-check-inline">
     <input class="form-check-input" type="radio" name="inlineRadioOptions" id="inlineRadio1" value="follows" onclick="changeArrowFunction('follows')">
     <label class="form-check-label" for="inlineRadio1">Follows</label>
@@ -94,6 +101,9 @@
     var infos = []
     var dragging = false;
     var a = 3;
+
+    var fun = false;
+
     var users = "{{test}}"
 
     var pointDrag = false;
@@ -104,6 +114,23 @@
 
     function infoCircle(x,y,name,count)
     {
+
+        //FUN
+        this.tempo = random(2,5)
+        this.xtempo = this.tempo;
+        this.ytempo = this.tempo;
+        this.scaleRate = 1
+        this.r = random(0,255)
+        this.g = random(0,255)
+        this.b = random(0,255)
+        this.rgrow = 1
+        this.ggrow = 1
+        this.bgrow = 1
+        
+
+        //END FUN
+
+
         this.x = x;
         this.y = y;
         this.name = name;
@@ -111,8 +138,8 @@
         this.draged = false;
         this.selected = true;
         this.infoopen = false;
-        this.col = color(0,0,255);
-        this.col = color(255,0,200);
+        this.col = color(this.r,this.g,this.b);
+        //this.col = color(255,0,200);
         this.textColor = color(0,0,0);
         let div = createDiv('<p>'+this.name+'</p><p>Follower Count: '+this.count+'</p><p href="#" class="btn btn-primary">Go somewhere</p>');
         div.style('font-size', '16px');
@@ -143,6 +170,33 @@
             var sz = 16*sf 
             div.style('font-size', sz+'px');
             div.size(300*sf,100*sf);
+
+
+            if(fun)
+            {
+                if( this.x > width)
+                {
+                    this.xtempo = -this.tempo
+                }else if(this.x <= 0)
+                {
+                    this.xtempo = +this.tempo
+                }
+
+                if( this.y > height)
+                {
+                    this.ytempo = -this.tempo
+                }else if(this.y <= 0)
+                {
+                    this.ytempo = +this.tempo
+                }
+                this.x += this.xtempo
+                this.y += this.ytempo
+
+            
+            }
+            
+            
+            //END FUN
         }
 
 
@@ -345,26 +399,30 @@
                             infos[z].textColor = color(0,0,0);
                         }
                         
-
                         
-                        l = line(x1.x,x1.y,x2.x,x2.y)
 
-                        noFill();
-                        if(!eachother)
+                        if(!fun)
                         {
-                            
-                            push() //start new drawing state
-                            var angle = atan2(x2.y - x1.y, x2.x - x1.x); //gets the angle of the line
-                            translate(x3.x, x3.y); //translates to the destination vertex
-                            rotate(angle-HALF_PI); //rotates the arrow point
-                            if(fillB)
-                            {
-                                fill(fcolor);
-                            }
-                            triangle((-offset)*0.5, offset-15, (offset)*0.5, offset-15, 0, ((-offset)/2)-15); //draws the arrow point as a triangle
-                            
+                            l = line(x1.x,x1.y,x2.x,x2.y)
+                        
+
                             noFill();
-                            pop();
+                            if(!eachother)
+                            {
+                                
+                                push() //start new drawing state
+                                var angle = atan2(x2.y - x1.y, x2.x - x1.x); //gets the angle of the line
+                                translate(x3.x, x3.y); //translates to the destination vertex
+                                rotate(angle-HALF_PI); //rotates the arrow point
+                                if(fillB)
+                                {
+                                    fill(fcolor);
+                                }
+                                triangle((-offset)*0.5, offset-15, (offset)*0.5, offset-15, 0, ((-offset)/2)-15); //draws the arrow point as a triangle
+                                
+                                noFill();
+                                pop();
+                            }
                         }
                         
                         /*noFill();
@@ -499,6 +557,11 @@
             {
                 infos[i].col = color(155,100,255);
             }
+    }
+
+    function changeFun()
+    {
+        fun = !fun
     }
 
     function selectCircle(e)
