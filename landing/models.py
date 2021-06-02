@@ -1,5 +1,11 @@
 from django.db import models
 
+class Game(models.Model):
+    gameName = models.CharField(max_length=30, unique=True)
+    color = models.CharField(max_length=30, unique=True, blank=True)
+
+    def __str__(self):
+        return self.gameName
 
 
 # Create your models here.
@@ -7,9 +13,13 @@ class TwitterUser(models.Model):
     username = models.CharField(max_length=30, unique=True)
     followerCount = models.IntegerField(default=0)
     userid = models.CharField(max_length=30, default="")
+    game = models.ManyToManyField(Game, related_name="Games")
     
     def __str__(self):
         return self.username
+
+
+
 
 
 class Follower(models.Model):

@@ -7,4 +7,5 @@ class FollowerAdmin(admin.ModelAdmin):
     
 admin.site.register(models.TwitterUser)
 admin.site.register(models.Connections)
+admin.site.register(models.Game)
 admin.site.register(models.Follower, FollowerAdmin)
