@@ -15,6 +15,12 @@
 {% endfor %}
 
 
+<div>
+    {% for user, f in pos.items %} 
+    <a id="pos_{{user}}">{{f}}</a>
+    {% endfor %}
+</div>
+
 <select class="custom-select" id="inputGroupSelect01" onchange="selectCircle(event)">
     <option selected value="ANY">All</option>
     {% for user, f in follows.items%}
@@ -112,6 +118,10 @@
 
 
 
+    var selectedColor = '#4287f5'
+    var neighbor = '#a1bbe380'
+    var notSelectedColor = '#bfbfbf1A'
+    var text_color = '#212121'
     function infoCircle(x,y,name,count)
     {
 
@@ -120,12 +130,7 @@
         this.xtempo = this.tempo;
         this.ytempo = this.tempo;
         this.scaleRate = 1
-        this.r = random(0,255)
-        this.g = random(0,255)
-        this.b = random(0,255)
-        this.rgrow = 1
-        this.ggrow = 1
-        this.bgrow = 1
+   
         
 
         //END FUN
@@ -137,10 +142,12 @@
         this.count = count
         this.draged = false;
         this.selected = true;
+
+        this.neighbor = false;
+
         this.infoopen = false;
-        this.col = color(this.r,this.g,this.b);
-        //this.col = color(255,0,200);
-        this.textColor = color(0,0,0);
+        this.col = color(selectedColor)
+        this.textColor = color(text_color);
         let div = createDiv('<p>'+this.name+'</p><p>Follower Count: '+this.count+'</p><p href="#" class="btn btn-primary">Go somewhere</p>');
         div.style('font-size', '16px');
         div.style('border','1px solid red')
@@ -222,10 +229,10 @@
             if(name == this.name || name == "ANY")
             {
                 this.selected = true
-                this.col = color(255,0,200);
+                this.col = color(selectedColor);
                 this.textColor = color(0,0,0);
             }else{
-                this.col = color(100,100,100,100);
+                this.col = color(notSelectedColor);
                 this.textColor = color(0,0,0,10);
                 this.selected = false
             }
@@ -234,11 +241,11 @@
         this.moved = function()
         {
             var d = dist(mouseX, mouseY, this.x*sf+xend, this.y*sf+yend)
-            if((d < Math.max(this.count/1000,20)/2*sf  && !dragging)|| this.dragging)
+            if(((d < Math.max(this.count/1000,20)/2*sf  && !dragging) && (this.selected|| this.neighbor))|| this.dragging)
             {
                 if(this.selected)
                 {
-                    this.col = color(255,0,200);
+                    this.col = color(selectedColor);
                 }
                 this.dragging = true;
                 dragging = true;
@@ -257,13 +264,27 @@
    
 
     function setup() {
-        var c = createCanvas(windowWidth, 800);
+        var c = createCanvas(windowWidth*0.9, windowHeight*0.8);
         
         for(var i = 0; i < document.getElementsByClassName("userdiv").length; i++)
         {
-            var x = random(width*0.2,width*0.75);
-            var y = random(height*0.2,height*0.75);
+            //var x = random(width*0.2,width*0.75);
+            //var y = random(height*0.2,height*0.75);
+            
+            
             var name = document.getElementsByClassName("userdiv")[i].id.split("div_")[1]
+            
+            console.log(name)
+            try{
+                var x = document.getElementById("pos_"+name).innerHTML.split(" ")[0].split('[')[1]*width*3
+                var y = document.getElementById("pos_"+name).innerHTML.split(" ")[1].split(']')[0]*height*3
+            }catch{
+                var x = random(width*0.2,width*0.75);
+                var y = random(height*0.2,height*0.75);
+            }
+
+
+
             infos.push(new infoCircle(x,y,name,document.getElementById("count_"+name).innerHTML));
         }
     
@@ -356,48 +377,56 @@
                         
                         if(!infos[i].selected && infos[z].selected && !fillB && followedBy && !follows)
                         {
-                            infos[i].col = color(100,100,100,100);
+                            infos[i].col = color(notSelectedColor);
+                            infos[i].neighbor = false;
                             infos[i].textColor = color(0,0,0,10);
                         }else if(!infos[i].selected && infos[z].selected && fillB && followedBy && !follows)
                         {
-                            infos[i].col = color(0,0,255, 100);
+                            infos[i].col = color(neighbor);
+                            infos[i].neighbor = true;
                             infos[i].textColor = color(0,0,0,200)
                         }else if(infos[i].selected && !infos[z].selected && fillB && !followedBy && follows)
                         {
-                            infos[z].col = color(0,0,255, 100);
+                            infos[z].col = color(neighbor);
+                            infos[z].neighbor = true;
                             infos[z].textColor = color(0,0,0,200)
                         }else if(infos[i].selected && !infos[z].selected && !fillB && !followedBy && follows)
                         {
-                            infos[z].col = color(100,100,100,100);
+                            infos[z].col = color(notSelectedColor);
+                            infos[z].neighbor = false;
                             infos[z].textColor = color(0,0,0,10);
                         }
                         else if(infos[i].selected && !infos[z].selected && fillB && followedBy && follows)
                         {
-                            infos[z].col = color(0,0,255, 100);
+                            infos[z].col = color(neighbor);
+                            infos[z].neighbor = true;
                             infos[z].textColor = color(0,0,0,200)
                         }else if(infos[z].selected && !infos[i].selected && fillB && followedBy && follows)
                         {
-                            infos[i].col = color(0,0,255, 100);
+                            infos[i].col = color(neighbor);
+                            infos[i].neighbor = true;
                             infos[i].textColor = color(0,0,0,200)
                         }else if(eachother && (infos[i].selected || infos[z].selected) && fillB){
-                            infos[i].col = color(0,0,255, 100);
+                            infos[i].col = color(neighbor);
+                            infos[i].neighbor = true;
                             infos[i].textColor = color(0,0,0,200)
                         }else if(eachother && (infos[i].selected || infos[z].selected) && !fillB){
-                            infos[z].col = color(100,100,100,100);
+                            infos[z].col = color(notSelectedColor);
+                            infos[z].neighbor = false;
                             infos[z].textColor = color(0,0,0,10);
                         }
 
-                        if(infos[i].selected)
-                        {
-                            infos[i].col = color(255,0,200);
-                            infos[i].textColor = color(0,0,0);
-                        }
+                        // if(infos[i].selected)
+                        // {
+                        //     infos[i].col = color(selectedColor);
+                        //     infos[i].textColor = color(0,0,0);
+                        // }
 
-                        if(infos[z].selected)
-                        {
-                            infos[z].col = color(255,0,200);
-                            infos[z].textColor = color(0,0,0);
-                        }
+                        // if(infos[z].selected)
+                        // {
+                        //     infos[z].col = color(selectedColor);
+                        //     infos[z].textColor = color(0,0,0);
+                        // }
                         
                         
 
@@ -605,12 +634,12 @@
         }
     }
 
-    /*window.addEventListener("wheel", function(e) {
+    window.addEventListener("wheel", function(e) {
     if (e.deltaY > 0)
         sf *= 1.05;
     else
         sf *= 0.95;
-    });*/
+    });
 </script>
 
 {% endblock content %}

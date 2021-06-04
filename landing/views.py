@@ -4,6 +4,10 @@ from . import models
 
 import time
 
+from django.db.models import Max
+import networkx as nx
+import matplotlib.pyplot as plt
+import random
 # Create your views here.
 
 
@@ -29,6 +33,35 @@ def landingView(request):
     context['absolute'] = absolute
     context['follows'] = followDict
 
+    G = nx.Graph()
+
+    for i in models.TwitterUser.objects.all():
+        connections = []
+        for con in models.Connections.objects.filter(fromUser=i):
+            
+            connections.append(con.amount)
+        connections.sort(reverse=True)
+        for z in range(0,3):
+            try:
+                max_con = models.Connections.objects.get(fromUser=i, amount=connections[z])
+                G.add_edge(max_con.fromUser,max_con.toUser, weight=max_con.amount)
+            except:
+                print(i, connections[z])
+            
+        
+
+    # for i in models.Connections.objects.all():
+    #     if i.amount > 100:
+    #         G.add_edge(i.fromUser,i.toUser, weight=i.amount/1000)
+    
+    seed = random.randint(0,10000)
+    pos = nx.spring_layout(G, k=3, iterations=50, seed=seed)
+    # nx.draw_networkx(G, pos=pos)
+    # print(pos)
+    # plt.show()
+    
+    context['seed'] = seed
+    context['pos'] = pos
     
     return render(request, "landing/circles.html",context)
 
@@ -51,6 +84,17 @@ def whoFollowsWhoView(request):
     context['dict'] = udict
     context['absolute'] = absolute
     context['follows'] = followDict
+
+
+    G = nx.Graph()
+    for i in models.Connections.objects.all():
+        if i.amount > 1000:
+            G.add_edge(i.fromUser,i.toUser, weight=i.amount)
+    
+    pos = nx.spectral_layout(G)
+
+    context['pos'] = pos
+
 
     
     return render(request, "landing/circlesTest.html",context)
@@ -103,6 +147,7 @@ def generateDataView(request):
                     try:
                         headers = {
                             'Authorization':'Bearer AAAAAAAAAAAAAAAAAAAAACP0OwEAAAAAKu6o%2FKNL4JwiYWB631z5Mp2hSmU%3D9iB8szeUz2IJrKji1NrDvtuM6xrJdQSeh4wKmdVLKJDvGU2m2Q'
+                            
                             }
 
                         r = req.get("https://api.twitter.com/1.1/followers/ids.json?cursor=-1&screen_name="+us+"&count=5000", headers=headers)

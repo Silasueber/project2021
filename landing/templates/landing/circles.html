@@ -12,7 +12,14 @@
 
 {% endfor %}
 
-
+<a>Seed: {{seed}}</a>
+<div class="d-none">
+    {% for user, f in pos.items %} 
+    
+    <a id="pos_{{user}}">{{f}}</a>
+    
+    {% endfor %}
+</div>
 
 {% include "landing/settingsBar.html"%}
 <select class="custom-select" id="inputGroupSelect01" onchange="selectCircle(event)">
@@ -110,16 +117,16 @@
             stroke(255);
             fill(this.col);
             strokeWeight(0);
-            ellipse(this.x, this.y, Math.max(this.count/1000,20), Math.max(this.count/1000,20));
+            ellipse(this.x, this.y, Math.max(this.count/5000,5), Math.max(this.count/5000,5));
             fill(this.textColor);
-            textSize(Math.max(this.count/1000,20));
+            textSize(Math.max(this.count/5000,5));
             
             text(this.name, this.x, this.y);
             strokeWeight(1);
             textSize(12);
             
             
-            div.position(this.x*sf+xend, this.y*sf+yend+(50+Math.max(this.count/1000,20)*sf));
+            div.position(this.x*sf+xend, this.y*sf+yend+(50+Math.max(this.count/5000,5)*sf));
             var sz = 16*sf 
             div.style('font-size', sz+'px');
             div.size(300*sf,100*sf);
@@ -180,17 +187,49 @@
         }
     }
 
-   
+   function deleteStringAt(string, pos)
+   {
+    return string.substring(0,pos) + string.substring(pos+1, string.length);
+   }
 
     function setup() {
         var c = createCanvas(windowWidth, 800);
         
         for(var i = 0; i < document.getElementsByClassName("userdiv").length; i++)
         {
-            var x = random(width*0.2,width*0.75);
-            var y = random(height*0.2,height*0.75);
             var name = document.getElementsByClassName("userdiv")[i].id.split("div_")[1]
-            infos.push(new infoCircle(x,y,name,document.getElementById("count_"+name).innerHTML));
+            
+            
+            try{
+                var cor_string = document.getElementById("pos_"+name).innerHTML
+                if(cor_string.charAt(1) == " ")
+                {
+                    cor_string = deleteStringAt(cor_string,1)
+                }
+
+                if(cor_string.charAt(cor_string.length-2) == " ")
+                {
+                    cor_string = deleteStringAt(cor_string,cor_string.length-2)
+                }
+
+                splitted_cor = cor_string.split(" ")
+
+                console.log(splitted_cor[splitted_cor.length-1])
+
+                var x = (width/2)+(splitted_cor[0].split('[')[1]*(width/2))
+                var y = (height/2)+(splitted_cor[splitted_cor.length-1].split(']')[0]*(height/2))
+                
+               
+
+                //console.log(name,x,y, cor_string, cor_string.split(" ")[0].split('[')[1], cor_string.split(" ")[cor_string.length-1].split(']')[0])
+                
+                infos.push(new infoCircle(x,y,name,document.getElementById("count_"+name).innerHTML));
+            }catch{
+                var x = random(width*0.2,width*0.75);
+                var y = random(height*0.2,height*0.75);
+            }
+
+           
         }
     
     }
@@ -377,12 +416,14 @@
             }
     }
 
-    /*window.addEventListener("wheel", function(e) {
+    
+
+    window.addEventListener("wheel", function(e) {
     if (e.deltaY > 0)
         sf *= 1.05;
     else
         sf *= 0.95;
-    });*/
+    });
 </script>
 
 {% endblock content %}
